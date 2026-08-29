@@ -187,6 +187,43 @@ class EntityFraudRateStrategy(EntityAnalysisStrategy):
         return pd.concat(results, ignore_index=True)
 
 
+class DeviceCardConnectivityStrategy(EntityAnalysisStrategy):
+
+    def __init__(self, min_cards: int = 2, top_n: int = 20):
+        if min_cards <= 0:
+            raise ValueError("min_cards must be greater than zero.")
+        if top_n <= 0:
+            raise ValueError("top_n must be greater than zero.")
+
+        self.min_cards = min_cards
+        self.top_n = top_n
+
+    def analyze(self, df: pd.DataFrame):
+        required_columns = {"DeviceInfo", "card1"}
+
+        missing_columns = required_columns - set(df.columns)
+        if missing_columns:
+            raise ValueError(f"Missing columns: {missing_columns}")
+
+        working_df = df[["DeviceInfo", "card1"]].dropna().copy()
+
+        result = (
+            working_df.groupby("DeviceInfo")
+            .agg(
+                unique_card1_count=("card1", "nunique"),
+                transaction_count=("card1", "count")
+            )
+            .query("unique_card1_count >= @self.min_cards")
+            .sort_values(
+                ["unique_card1_count", "transaction_count"],
+                ascending=False
+            )
+            .head(self.top_n)
+            .reset_index()
+        )
+
+        return result
+
 # Context Class for Entity Analysis
 class EntityAnalyzer:
 
@@ -219,6 +256,7 @@ def main():
     print("1. EntityCardinalityStrategy")
     print("2. SharedEntityStrategy")
     print("3. EntityFraudRateStrategy")
+    print("4. DeviceCardConnectivityStrategy")
 
 
 if __name__ == "__main__":
