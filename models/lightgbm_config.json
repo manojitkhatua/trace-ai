@@ -1,0 +1,14 @@
+{
+  "threshold": 0.4,
+  "pr_auc": 0.23711512899774836,
+  "roc_auc": 0.8216698887475258,
+  "num_leaves": 63,
+  "min_child_samples": 50,
+  "learning_rate": 0.1,
+  "n_estimators": 200,
+  "subsample": 0.8,
+  "colsample_bytree": 0.8,
+  "reg_alpha": 0,
+  "reg_lambda": 5,
+  "scale_pos_weight": 6.865368
+}
