@@ -3,17 +3,21 @@ import sys
 
 import pandas as pd
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
-# ------------------------------------------------------------
+# ============================================================
 # Project path
-# ------------------------------------------------------------
+# ============================================================
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+SRC = ROOT / "src"
 
-# ------------------------------------------------------------
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+# ============================================================
 # TRACE components
-# ------------------------------------------------------------
+# ============================================================
 
 from models.predictor import FraudPredictor
 from backend.risk_engine import RiskEngine
@@ -21,10 +25,9 @@ from backend.decision_engine import DecisionEngine
 from backend.audit_logger import AuditLogger
 from backend.gemini_service import GeminiService
 
-
-# ------------------------------------------------------------
-# Initialize components
-# ------------------------------------------------------------
+# ============================================================
+# Initialize TRACE
+# ============================================================
 
 predictor = FraudPredictor(
     ROOT / "models" / "lightgbm_final.pkl",
@@ -37,57 +40,88 @@ decision_engine = DecisionEngine()
 audit_logger = AuditLogger()
 gemini_service = GeminiService()
 
+# ============================================================
+# Flask application
+# ============================================================
+
 app = Flask(__name__)
 
+# Allow the React/Vite frontend to communicate with Flask
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": [
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+            ]
+        }
+    },
+    methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
 
-# ------------------------------------------------------------
+# ============================================================
 # Health check
-# ------------------------------------------------------------
+# ============================================================
 
 @app.get("/")
 def home():
     return jsonify({
         "status": "ok",
         "service": "TRACE Fraud Detection API",
-    })
+    }), 200
 
 
-# ------------------------------------------------------------
-# Fraud prediction
-# ------------------------------------------------------------
+# ============================================================
+# Prediction endpoint
+# ============================================================
 
 @app.post("/predict")
 def predict():
     try:
         data = request.get_json(silent=True)
 
-        if not data:
+        if not isinstance(data, dict) or not data:
             return jsonify({
-                "error": "Request body must contain JSON."
+                "error": "Request body must contain valid JSON."
             }), 400
 
+        # Convert one transaction into a DataFrame
         transaction = pd.DataFrame([data])
 
+        # ----------------------------------------------------
         # 1. ML + SHAP + anomaly + entity intelligence
+        # ----------------------------------------------------
+
         result = predictor.predict(transaction)
 
-        # 2. Unified risk score
-        result.update(
-            risk_engine.calculate(
-                result["fraud_probability"],
-                result["anomaly_score"],
-                result["entity_risk"],
-            )
+        # ----------------------------------------------------
+        # 2. Unified TRACE risk score
+        # ----------------------------------------------------
+
+        risk_result = risk_engine.calculate(
+            result["fraud_probability"],
+            result["anomaly_score"],
+            result["entity_risk"],
         )
 
+        result.update(risk_result)
+
+        # ----------------------------------------------------
         # 3. Operational decision
-        result.update(
-            decision_engine.decide(
-                result["risk_score"]
-            )
+        # ----------------------------------------------------
+
+        decision_result = decision_engine.decide(
+            result["risk_score"]
         )
 
+        result.update(decision_result)
+
+        # ----------------------------------------------------
         # 4. Gemini explanation
+        # ----------------------------------------------------
+
         evidence = {
             "fraud_probability": result["fraud_probability"],
             "anomaly_score": result["anomaly_score"],
@@ -95,23 +129,35 @@ def predict():
             "risk_score": result["risk_score"],
             "risk_level": result["risk_level"],
             "decision": result["decision"],
-            "reasons": result["reasons"],
-            "anomaly_signals": result["anomaly_signals"],
-            "entity_breakdown": result["entity_breakdown"],
+            "reasons": result.get("reasons", []),
+            "anomaly_signals": result.get("anomaly_signals", []),
+            "entity_breakdown": result.get("entity_breakdown", {}),
         }
 
         try:
-            result["gemini_explanation"] = (
-                gemini_service.explain(evidence)
+            result["gemini_explanation"] = gemini_service.explain(
+                evidence
             )
         except Exception:
+            # Gemini must never affect TRACE's core decision
             result["gemini_explanation"] = (
                 "AI explanation unavailable. "
                 "TRACE decision remains valid."
             )
 
+        # ----------------------------------------------------
         # 5. Audit trail
-        audit_logger.log(data, result)
+        # ----------------------------------------------------
+
+        try:
+            audit_logger.log(data, result)
+        except Exception as audit_error:
+            # Logging failure should not invalidate a prediction
+            result["audit_warning"] = str(audit_error)
+
+        # ----------------------------------------------------
+        # 6. Return response
+        # ----------------------------------------------------
 
         return jsonify(result), 200
 
@@ -121,9 +167,9 @@ def predict():
         }), 500
 
 
-# ------------------------------------------------------------
-# Run
-# ------------------------------------------------------------
+# ============================================================
+# Run server
+# ============================================================
 
 if __name__ == "__main__":
     app.run(
