@@ -1,4 +1,4 @@
-[README (2).md](https://github.com/user-attachments/files/31849843/README.2.md)
+[README.md](https://github.com/user-attachments/files/31849843/README.2.md)
 # TRACE — Transaction Risk Assessment & Continuous Evaluation
 
 > An intelligent transaction risk assessment platform that combines machine learning, anomaly detection, entity intelligence, explainability, and auditability to turn transaction data into actionable decisions.
