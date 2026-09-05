@@ -1,0 +1,101 @@
+{
+    "features": {
+        "TransactionAmt": {
+            "type": "continuous",
+            "q01": 9.503,
+            "q25": 42.95,
+            "median": 68.95,
+            "q75": 125.0,
+            "q99": 1104.0
+        },
+        "log_transaction_amount": {
+            "type": "continuous",
+            "q01": 2.351660930640638,
+            "q25": 3.783052624131186,
+            "median": 4.24778070111149,
+            "q75": 4.836281906951478,
+            "q99": 7.007600613951853
+        },
+        "card1_transaction_count": {
+            "type": "continuous",
+            "q01": 2.0,
+            "q25": 105.0,
+            "median": 728.0,
+            "q75": 2536.0,
+            "q99": 12205.0
+        },
+        "card2_transaction_count": {
+            "type": "continuous",
+            "q01": 66.0,
+            "q25": 2381.0,
+            "median": 7769.0,
+            "q75": 30168.0,
+            "q99": 38743.0
+        },
+        "addr1_transaction_count": {
+            "type": "continuous",
+            "q01": 667.0,
+            "q25": 6858.0,
+            "median": 16537.0,
+            "q75": 34061.0,
+            "q99": 53761.0
+        },
+        "card1_DeviceInfo_transaction_count": {
+            "type": "continuous",
+            "q01": 0.0,
+            "q25": 0.0,
+            "median": 0.0,
+            "q75": 0.0,
+            "q99": 888.0
+        },
+        "card1_unique_DeviceInfo_count": {
+            "type": "continuous",
+            "q01": 0.0,
+            "q25": 3.0,
+            "median": 9.0,
+            "q75": 34.0,
+            "q99": 543.0
+        },
+        "DeviceInfo_unique_card1_count": {
+            "type": "continuous",
+            "q01": 0.0,
+            "q25": 0.0,
+            "median": 0.0,
+            "q75": 0.0,
+            "q99": 4517.0
+        },
+        "addr1_missing": {
+            "type": "binary",
+            "frequency_1": 0.11379627120940157
+        },
+        "addr2_missing": {
+            "type": "binary",
+            "frequency_1": 0.11379627120940157
+        },
+        "D7_missing": {
+            "type": "binary",
+            "frequency_1": 0.9366173332881769
+        },
+        "D12_missing": {
+            "type": "binary",
+            "frequency_1": 0.8884432045246723
+        },
+        "D13_missing": {
+            "type": "binary",
+            "frequency_1": 0.8963385206759915
+        },
+        "D14_missing": {
+            "type": "binary",
+            "frequency_1": 0.8945118027567989
+        },
+        "DeviceInfo_missing": {
+            "type": "binary",
+            "frequency_1": 0.7893114776306431
+        }
+    },
+    "weights": {
+        "amount": 0.3,
+        "entity": 0.55,
+        "missingness": 0.15
+    }
+}
