@@ -7,6 +7,7 @@ import SignIn from "./pages/SignIn";
 import Overview from "./pages/Overview";
 import Analyze from "./pages/Analyze";
 import Investigation from "./pages/Investigation";
+import RiskIntelligence from "./pages/RiskIntelligence";
 import AuditTrail from "./pages/AuditTrail";
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -25,9 +26,11 @@ export default function App() {
     <HashRouter>
       <TraceProvider>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Landing />} />
           <Route path="/sign-in" element={<SignIn />} />
 
+          {/* Protected application routes */}
           <Route
             path="/app"
             element={
@@ -56,6 +59,15 @@ export default function App() {
           />
 
           <Route
+            path="/app/risk-intelligence"
+            element={
+              <RequireAuth>
+                <RiskIntelligence />
+              </RequireAuth>
+            }
+          />
+
+          <Route
             path="/app/audit-trail"
             element={
               <RequireAuth>
@@ -64,6 +76,7 @@ export default function App() {
             }
           />
 
+          {/* Backward-compatible routes */}
           <Route
             path="/analyze"
             element={<Navigate to="/app/analyze" replace />}
@@ -75,10 +88,16 @@ export default function App() {
           />
 
           <Route
+            path="/risk-intelligence"
+            element={<Navigate to="/app/risk-intelligence" replace />}
+          />
+
+          <Route
             path="/audit-trail"
             element={<Navigate to="/app/audit-trail" replace />}
           />
 
+          {/* Unknown route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </TraceProvider>
