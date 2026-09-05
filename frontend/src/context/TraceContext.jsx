@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { ALL_DEMO_RECORDS } from "../utils/demoData";
+import { API_BASE_URL } from "../services/api";
 
 const STORAGE_KEY = "trace_history_v1";
 
@@ -30,13 +31,12 @@ function loadStoredHistory() {
 }
 
 export function TraceProvider({ children }) {
-  const [history, setHistory] = useState(
-    () => loadStoredHistory() || ALL_DEMO_RECORDS
-  );
+  const initialHistory = loadStoredHistory() || ALL_DEMO_RECORDS;
+
+  const [history, setHistory] = useState(initialHistory);
 
   const [currentId, setCurrentId] = useState(
-    () =>
-      (loadStoredHistory() || ALL_DEMO_RECORDS)[0]?.id || null
+    initialHistory[0]?.id || null
   );
 
   const [apiStatus, setApiStatus] = useState({
@@ -55,6 +55,63 @@ export function TraceProvider({ children }) {
       // Ignore localStorage errors.
     }
   }, [history]);
+
+  // Check the live Render backend.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkApi() {
+      try {
+        const controller = new AbortController();
+
+        const timer = setTimeout(() => {
+          controller.abort();
+        }, 10000);
+
+        const response = await fetch(
+          API_BASE_URL.replace(/\/$/, ""),
+          {
+            method: "GET",
+            signal: controller.signal,
+          }
+        );
+
+        clearTimeout(timer);
+
+        if (!response.ok) {
+          throw new Error(
+            `TRACE API health check failed: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+
+        if (!cancelled) {
+          setApiStatus({
+            mode: data?.status === "ok" ? "live" : "unknown",
+            checkedAt: new Date().toISOString(),
+            error: null,
+          });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setApiStatus({
+            mode: "offline",
+            checkedAt: new Date().toISOString(),
+            error:
+              error?.message ||
+              "TRACE API is unreachable.",
+          });
+        }
+      }
+    }
+
+    checkApi();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const addRecord = useCallback((record) => {
     setHistory((previous) => [record, ...previous]);
