@@ -13,7 +13,7 @@ export const API_BASE_URL =
   "http://127.0.0.1:5000";
 
 const PREDICT_ENDPOINT = `${API_BASE_URL.replace(/\/$/, "")}/predict`;
-const DEFAULT_TIMEOUT_MS = 15000;
+const DEFAULT_TIMEOUT_MS = 60000;
 
 const FEATURE_LABELS = {
   TransactionAmt: "Transaction Amount",
