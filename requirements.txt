@@ -10,3 +10,4 @@ torch
 python-dotenv
 google-genai
 gunicorn
+pyarrow
