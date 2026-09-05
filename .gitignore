@@ -115,3 +115,4 @@ Thumbs.db
 *.swo
 # Private preprocessing artifacts
 models/preprocessing/
+dist/
