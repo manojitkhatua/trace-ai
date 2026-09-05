@@ -82,6 +82,8 @@ def home():
 @app.post("/predict")
 def predict():
     try:
+        print("STEP 1: /predict received", flush=True)
+
         data = request.get_json(silent=True)
 
         if not isinstance(data, dict) or not data:
@@ -89,18 +91,16 @@ def predict():
                 "error": "Request body must contain valid JSON."
             }), 400
 
-        # Convert one transaction into a DataFrame
         transaction = pd.DataFrame([data])
 
-        # ----------------------------------------------------
-        # 1. ML + SHAP + anomaly + entity intelligence
-        # ----------------------------------------------------
+        print("STEP 2: starting predictor", flush=True)
 
         result = predictor.predict(transaction)
 
-        # ----------------------------------------------------
-        # 2. Unified TRACE risk score
-        # ----------------------------------------------------
+        print(
+            f"STEP 3: predictor finished | fraud={result.get('fraud_probability')}",
+            flush=True
+        )
 
         risk_result = risk_engine.calculate(
             result["fraud_probability"],
@@ -110,9 +110,10 @@ def predict():
 
         result.update(risk_result)
 
-        # ----------------------------------------------------
-        # 3. Operational decision
-        # ----------------------------------------------------
+        print(
+            f"STEP 4: risk engine finished | risk={result.get('risk_score')}",
+            flush=True
+        )
 
         decision_result = decision_engine.decide(
             result["risk_score"]
@@ -120,9 +121,10 @@ def predict():
 
         result.update(decision_result)
 
-        # ----------------------------------------------------
-        # 4. Gemini explanation
-        # ----------------------------------------------------
+        print(
+            f"STEP 5: decision finished | decision={result.get('decision')}",
+            flush=True
+        )
 
         evidence = {
             "fraud_probability": result["fraud_probability"],
@@ -136,38 +138,42 @@ def predict():
             "entity_breakdown": result.get("entity_breakdown", {}),
         }
 
+        print("STEP 6: starting Gemini", flush=True)
+
         try:
             result["gemini_explanation"] = gemini_service.explain(
                 evidence
             )
-        except Exception:
-            # Gemini must never affect TRACE's core decision
+            print("STEP 7: Gemini finished", flush=True)
+
+        except Exception as gemini_error:
+            print(
+                f"STEP 7: Gemini failed: {gemini_error}",
+                flush=True
+            )
+
             result["gemini_explanation"] = (
                 "AI explanation unavailable. "
                 "TRACE decision remains valid."
             )
 
-        # ----------------------------------------------------
-        # 5. Audit trail
-        # ----------------------------------------------------
+        print("STEP 8: audit logging", flush=True)
 
         try:
             audit_logger.log(data, result)
         except Exception as audit_error:
-            # Logging failure should not invalidate a prediction
             result["audit_warning"] = str(audit_error)
 
-        # ----------------------------------------------------
-        # 6. Return response
-        # ----------------------------------------------------
+        print("STEP 9: returning response", flush=True)
 
         return jsonify(result), 200
 
     except Exception as e:
+        print(f"TRACE ERROR: {e}", flush=True)
+
         return jsonify({
             "error": str(e)
         }), 500
-
 
 # ============================================================
 # Run server
