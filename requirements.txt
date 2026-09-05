@@ -6,5 +6,7 @@ scikit-learn
 lightgbm
 joblib
 shap
-google-generativeai
+torch
 python-dotenv
+google-genai
+gunicorn
