@@ -5,6 +5,8 @@
 
 **TRACE decisions:** `ALLOW` · `REVIEW` · `BLOCK`
 
+DEPLOYED LINK :[ ](https://trace-gq747476y-manojitkhatuas-projects.vercel.app/#/app/investigation)
+
 ---
 
 ## Overview
