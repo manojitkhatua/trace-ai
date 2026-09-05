@@ -56,13 +56,13 @@ CORS(
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
                 "https://trace-b1v6336ln-manojitkhatuas-projects.vercel.app",
+                "https://trace-aggneh3ut-manojitkhatuas-projects.vercel.app",
             ]
         }
     },
     methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
-
 # ============================================================
 # Health check
 # ============================================================
