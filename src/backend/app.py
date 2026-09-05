@@ -5,6 +5,7 @@ import os
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import re
 
 # ============================================================
 # Project path
@@ -55,8 +56,7 @@ CORS(
             "origins": [
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
-                "https://trace-b1v6336ln-manojitkhatuas-projects.vercel.app",
-                "https://trace-aggneh3ut-manojitkhatuas-projects.vercel.app",
+                re.compile(r"^https://.*\.vercel\.app$"),
             ]
         }
     },
