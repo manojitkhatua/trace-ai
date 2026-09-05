@@ -876,7 +876,7 @@ Git
 ## 1. Clone the Repository
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone https://github.com/manojitkhatua/trace-ai
 cd trace-ai
 ```
 
