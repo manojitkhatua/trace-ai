@@ -4,8 +4,10 @@
 
 **TRACE Decisions:** `ALLOW` · `REVIEW` · `BLOCK`
 
-### 🚀 Live Demo
-[Open TRACE](https://trace-gq747476y-manojitkhatuas-projects.vercel.app/#/app/investigation)
+### 🚀 Demo
+[View Demo](https://trace-gq747476y-manojitkhatuas-projects.vercel.app/#/app)
+
+> The demo is deployed for evaluation and demonstration purposes.
 
 ---
 
